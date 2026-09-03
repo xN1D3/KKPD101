@@ -35,22 +35,24 @@ function loadData() {
     casesData = window.DEFAULT_CASES.map(c => ({ ...c, starred: false }));
   }
 
-  // Load Presets
+  // Always force sync DEFAULT_PRESETS to ensure preset IDs and case targets are updated
   const savedPresets = localStorage.getItem('fivem_pd_presets_v1');
   if (savedPresets) {
     try {
-      presetsData = JSON.parse(savedPresets);
-      // Ensure all DEFAULT_PRESETS exist and are updated with latest caseIds
+      let loaded = JSON.parse(savedPresets);
       if (window.DEFAULT_PRESETS) {
         window.DEFAULT_PRESETS.forEach(defP => {
-          const index = presetsData.findIndex(p => p.id === defP.id || p.name === defP.name);
-          if (index !== -1) {
-            presetsData[index] = { ...defP, ...presetsData[index], id: defP.id, caseIds: defP.caseIds };
+          const idx = loaded.findIndex(p => p.id === defP.id || p.name === defP.name);
+          if (idx !== -1) {
+            loaded[idx].caseIds = defP.caseIds;
+            loaded[idx].id = defP.id;
+            loaded[idx].name = defP.name;
           } else {
-            presetsData.push(defP);
+            loaded.push(defP);
           }
         });
       }
+      presetsData = loaded;
     } catch (e) {
       presetsData = window.DEFAULT_PRESETS ? [...window.DEFAULT_PRESETS] : [];
     }
@@ -67,17 +69,48 @@ function saveData() {
 }
 
 function toggleStar(id, e) {
-  if (e) {
-    e.stopPropagation();
-    e.preventDefault();
-  }
-
+  if (e) e.stopPropagation();
   const c = casesData.find(item => item.id === id);
   if (c) {
     c.starred = !c.starred;
     saveData();
     renderCases();
   }
+}
+
+// Apply Quick Case Presets
+function applyPreset(presetId) {
+  let p = presetsData.find(item => item.id === presetId);
+  if (!p && window.DEFAULT_PRESETS) {
+    p = window.DEFAULT_PRESETS.find(item => item.id === presetId);
+  }
+  if (!p) return;
+
+  let addedCount = 0;
+  (p.caseIds || []).forEach(target => {
+    // Search case by exact ID, or name match
+    let caseObj = casesData.find(c => c.id === target || c.name === target);
+    
+    // Fuzzy matching fallbacks
+    if (!caseObj) {
+      if (target === 'case-weap-1') caseObj = casesData.find(c => c.name.includes('อาวุธมีปืน'));
+      else if (target === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
+      else if (target === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
+      else if (target === 'case-gen-1') caseObj = casesData.find(c => c.name.includes('ขัดขวางเจ้าหน้าที่'));
+      else if (target === 'case-red-2') caseObj = casesData.find(c => c.name.includes('ต่อสู้เจ้าหน้าที่'));
+      else if (target === 'case-gen-11') caseObj = casesData.find(c => c.name.includes('ทะเลาะวิวาท'));
+    }
+
+    if (caseObj) {
+      const cur = fineBasket.get(caseObj.id) || 0;
+      fineBasket.set(caseObj.id, cur + 1);
+      addedCount++;
+    }
+  });
+
+  renderCases();
+  updateSummary();
+  showToast(`เลือก ${p.name} เรียบร้อย (${addedCount} คดี)`);
 }
 
 let fineMultiplier = 1;
