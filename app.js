@@ -232,8 +232,25 @@ function applyPreset(presetId) {
   const p = presetsData.find(item => item.id === presetId);
   if (!p || !p.caseIds) return;
 
-  p.caseIds.forEach(id => {
-    const caseObj = casesData.find(c => c.id === id);
+  p.caseIds.forEach(idOrName => {
+    // 1. Try finding by exact ID
+    let caseObj = casesData.find(c => c.id === idOrName);
+
+    // 2. Fallback: If not found by ID, try finding by Name
+    if (!caseObj) {
+      caseObj = casesData.find(c => c.name === idOrName);
+    }
+
+    // 3. Fallback: Mapping by known preset default names
+    if (!caseObj) {
+      if (idOrName === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
+      if (idOrName === 'case-weap-1') caseObj = casesData.find(c => c.name === 'อาวุธมีปืน');
+      if (idOrName === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
+      if (idOrName === 'case-gen-1') caseObj = casesData.find(c => c.name === 'ขัดขวางเจ้าหน้าที่ (สตอรี่)');
+      if (idOrName === 'case-red-2') caseObj = casesData.find(c => c.name === 'ต่อสู้เจ้าหน้าที่');
+      if (idOrName === 'case-gen-11') caseObj = casesData.find(c => c.name === 'ทะเลาะวิวาท (แก๊ง)');
+    }
+
     if (caseObj) {
       fineBasket.set(caseObj.id, 1);
     }
