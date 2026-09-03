@@ -1,3 +1,4 @@
+// State Management
 let casesData = [];
 let presetsData = [];
 let selectedCategory = 'preset';
@@ -8,6 +9,12 @@ let fineBasket = new Map();
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+  // Force clear old localstorage cache to ensure no broken state exists
+  localStorage.removeItem('fivem_pd_cases_v4');
+  localStorage.removeItem('fivem_pd_presets_v1');
+  localStorage.removeItem('fivem_pd_cases_v5');
+  localStorage.removeItem('fivem_pd_presets_v2');
+
   loadData();
   setupEventListeners();
   renderCategories();
@@ -17,13 +24,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load Cases & Presets from LocalStorage or Defaults
 function loadData() {
-  const savedCases = localStorage.getItem('fivem_pd_cases_v5');
+  // 1. Load cases: Always ensure default cases are present
+  const savedCases = localStorage.getItem('fivem_pd_cases_v6');
   if (savedCases) {
     try {
       casesData = JSON.parse(savedCases);
       if (window.DEFAULT_CASES) {
         window.DEFAULT_CASES.forEach(defCase => {
-          if (!casesData.some(c => c.name === defCase.name)) {
+          if (!casesData.some(c => c.id === defCase.id || c.name === defCase.name)) {
             casesData.push({ ...defCase, starred: false });
           }
         });
@@ -35,16 +43,16 @@ function loadData() {
     casesData = window.DEFAULT_CASES.map(c => ({ ...c, starred: false }));
   }
 
-  // Always initialize presets directly from window.DEFAULT_PRESETS merged with custom saved ones
+  // 2. Load presets: Always construct from window.DEFAULT_PRESETS directly
   presetsData = window.DEFAULT_PRESETS ? JSON.parse(JSON.stringify(window.DEFAULT_PRESETS)) : [];
-
-  const savedPresets = localStorage.getItem('fivem_pd_presets_v2');
-  if (savedPresets) {
+  
+  const savedCustomPresets = localStorage.getItem('fivem_pd_presets_v6');
+  if (savedCustomPresets) {
     try {
-      const userCustom = JSON.parse(savedPresets);
-      userCustom.forEach(uP => {
-        if (!presetsData.some(p => p.id === uP.id)) {
-          presetsData.push(uP);
+      const customs = JSON.parse(savedCustomPresets);
+      customs.forEach(cP => {
+        if (!presetsData.some(p => p.id === cP.id)) {
+          presetsData.push(cP);
         }
       });
     } catch (e) {}
@@ -54,8 +62,8 @@ function loadData() {
 }
 
 function saveData() {
-  localStorage.setItem('fivem_pd_cases_v5', JSON.stringify(casesData));
-  localStorage.setItem('fivem_pd_presets_v2', JSON.stringify(presetsData));
+  localStorage.setItem('fivem_pd_cases_v6', JSON.stringify(casesData));
+  localStorage.setItem('fivem_pd_presets_v6', JSON.stringify(presetsData));
 }
 
 function toggleStar(id, e) {
@@ -257,31 +265,29 @@ function applyPreset(presetId) {
   if (!p && window.DEFAULT_PRESETS) {
     p = window.DEFAULT_PRESETS.find(item => item.id === presetId);
   }
-  if (!p) return;
+  if (!p) {
+    console.error('Preset not found:', presetId);
+    return;
+  }
 
   let addedCount = 0;
-  (p.caseIds || []).forEach(target => {
-    // 1. Match by exact ID
-    let caseObj = casesData.find(c => c.id === target);
+  (p.caseIds || []).forEach(targetIdOrName => {
+    // Search case by exact ID first, then by name
+    let caseObj = casesData.find(c => c.id === targetIdOrName) || casesData.find(c => c.name === targetIdOrName);
 
-    // 2. Match by exact Name
+    // Fallbacks if ID mismatch
     if (!caseObj) {
-      caseObj = casesData.find(c => c.name === target);
-    }
-
-    // 3. Fallback name mappings
-    if (!caseObj) {
-      if (target === 'case-weap-1') caseObj = casesData.find(c => c.name.includes('อาวุธมีปืน'));
-      else if (target === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
-      else if (target === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
-      else if (target === 'case-gen-1') caseObj = casesData.find(c => c.name.includes('ขัดขวางเจ้าหน้าที่'));
-      else if (target === 'case-red-2') caseObj = casesData.find(c => c.name.includes('ต่อสู้เจ้าหน้าที่'));
-      else if (target === 'case-gen-11') caseObj = casesData.find(c => c.name.includes('ทะเลาะวิวาท'));
+      if (targetIdOrName === 'case-weap-1') caseObj = casesData.find(c => c.name === 'อาวุธมีปืน');
+      else if (targetIdOrName === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
+      else if (targetIdOrName === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
+      else if (targetIdOrName === 'case-gen-1') caseObj = casesData.find(c => c.name === 'ขัดขวางเจ้าหน้าที่ (สตอรี่)');
+      else if (targetIdOrName === 'case-red-2') caseObj = casesData.find(c => c.name === 'ต่อสู้เจ้าหน้าที่');
+      else if (targetIdOrName === 'case-gen-11') caseObj = casesData.find(c => c.name === 'ทะเลาะวิวาท (แก๊ง)');
     }
 
     if (caseObj) {
-      const cur = fineBasket.get(caseObj.id) || 0;
-      fineBasket.set(caseObj.id, cur + 1);
+      const currentCount = fineBasket.get(caseObj.id) || 0;
+      fineBasket.set(caseObj.id, currentCount + 1);
       addedCount++;
     }
   });
