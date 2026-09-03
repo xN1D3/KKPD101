@@ -35,16 +35,17 @@ function loadData() {
     casesData = window.DEFAULT_CASES.map(c => ({ ...c, starred: false }));
   }
 
+  // Load Presets
   const savedPresets = localStorage.getItem('fivem_pd_presets_v1');
   if (savedPresets) {
     try {
       presetsData = JSON.parse(savedPresets);
-      // Auto update/sync default presets if ids match or names match
+      // Ensure all DEFAULT_PRESETS exist and are updated with latest caseIds
       if (window.DEFAULT_PRESETS) {
         window.DEFAULT_PRESETS.forEach(defP => {
           const index = presetsData.findIndex(p => p.id === defP.id || p.name === defP.name);
           if (index !== -1) {
-            presetsData[index] = { ...defP, ...presetsData[index], caseIds: defP.caseIds };
+            presetsData[index] = { ...defP, ...presetsData[index], id: defP.id, caseIds: defP.caseIds };
           } else {
             presetsData.push(defP);
           }
@@ -229,30 +230,30 @@ function renderCategories() {
 
 // Apply Quick Case Presets
 function applyPreset(presetId) {
-  const p = presetsData.find(item => item.id === presetId);
-  if (!p || !p.caseIds) return;
+  let p = presetsData.find(item => item.id === presetId);
+  if (!p) {
+    p = window.DEFAULT_PRESETS?.find(item => item.id === presetId);
+  }
+  if (!p) return;
 
-  p.caseIds.forEach(idOrName => {
-    // 1. Try finding by exact ID
-    let caseObj = casesData.find(c => c.id === idOrName);
+  // Clear current basket before applying preset or accumulate
+  // p.caseIds can contain IDs or Names
+  (p.caseIds || []).forEach(idOrName => {
+    let caseObj = casesData.find(c => c.id === idOrName || c.name === idOrName);
 
-    // 2. Fallback: If not found by ID, try finding by Name
+    // Dynamic fuzzy/fallback matching by name
     if (!caseObj) {
-      caseObj = casesData.find(c => c.name === idOrName);
-    }
-
-    // 3. Fallback: Mapping by known preset default names
-    if (!caseObj) {
-      if (idOrName === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
-      if (idOrName === 'case-weap-1') caseObj = casesData.find(c => c.name === 'อาวุธมีปืน');
-      if (idOrName === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
-      if (idOrName === 'case-gen-1') caseObj = casesData.find(c => c.name === 'ขัดขวางเจ้าหน้าที่ (สตอรี่)');
-      if (idOrName === 'case-red-2') caseObj = casesData.find(c => c.name === 'ต่อสู้เจ้าหน้าที่');
-      if (idOrName === 'case-gen-11') caseObj = casesData.find(c => c.name === 'ทะเลาะวิวาท (แก๊ง)');
+      if (idOrName.includes('weap-1') || idOrName.includes('มีปืน')) caseObj = casesData.find(c => c.name.includes('อาวุธมีปืน'));
+      else if (idOrName.includes('red-9') || idOrName === 'อุ้มห่อ') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
+      else if (idOrName.includes('red-7') || idOrName === 'สมรู้อุ้มห่อ') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
+      else if (idOrName.includes('gen-1') || idOrName.includes('สตอรี่')) caseObj = casesData.find(c => c.name.includes('ขัดขวางเจ้าหน้าที่'));
+      else if (idOrName.includes('red-2') || idOrName.includes('ต่อสู้')) caseObj = casesData.find(c => c.name.includes('ต่อสู้เจ้าหน้าที่'));
+      else if (idOrName.includes('gen-11') || idOrName.includes('แก๊ง')) caseObj = casesData.find(c => c.name.includes('ทะเลาะวิวาท'));
     }
 
     if (caseObj) {
-      fineBasket.set(caseObj.id, 1);
+      const current = fineBasket.get(caseObj.id) || 0;
+      fineBasket.set(caseObj.id, current + 1);
     }
   });
 
