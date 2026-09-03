@@ -35,27 +35,19 @@ function loadData() {
     casesData = window.DEFAULT_CASES.map(c => ({ ...c, starred: false }));
   }
 
-  // Presets load with forced sync from DEFAULT_PRESETS
+  // Always initialize presets directly from window.DEFAULT_PRESETS merged with custom saved ones
+  presetsData = window.DEFAULT_PRESETS ? JSON.parse(JSON.stringify(window.DEFAULT_PRESETS)) : [];
+
   const savedPresets = localStorage.getItem('fivem_pd_presets_v2');
   if (savedPresets) {
     try {
-      presetsData = JSON.parse(savedPresets);
-      if (window.DEFAULT_PRESETS) {
-        window.DEFAULT_PRESETS.forEach(defP => {
-          const idx = presetsData.findIndex(p => p.id === defP.id || p.name === defP.name);
-          if (idx !== -1) {
-            presetsData[idx].caseIds = defP.caseIds;
-            presetsData[idx].id = defP.id;
-          } else {
-            presetsData.push(defP);
-          }
-        });
-      }
-    } catch (e) {
-      presetsData = window.DEFAULT_PRESETS ? JSON.parse(JSON.stringify(window.DEFAULT_PRESETS)) : [];
-    }
-  } else {
-    presetsData = window.DEFAULT_PRESETS ? JSON.parse(JSON.stringify(window.DEFAULT_PRESETS)) : [];
+      const userCustom = JSON.parse(savedPresets);
+      userCustom.forEach(uP => {
+        if (!presetsData.some(p => p.id === uP.id)) {
+          presetsData.push(uP);
+        }
+      });
+    } catch (e) {}
   }
 
   saveData();
