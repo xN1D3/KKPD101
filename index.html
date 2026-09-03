@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FiveM Police Fine & Case Calculator - ระบบคำนวณคดีและค้นหาของกลาง</title>
+
+  <!-- Font Prompt from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom Style -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-shield-halved"></i>
+      </div>
+      <div class="brand-text">
+        <h1>KKPD Fine & Case</h1>
+        <span>วิชาคำนวณคดี 101</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" id="manageCasesBtn">
+        <i class="fa-solid fa-gear"></i> จัดการคดี / เพิ่มข้อหา
+      </button>
+      <button class="btn-secondary" id="exportDataBtn" title="ส่งออกไฟล์คดี JSON">
+        <i class="fa-solid fa-download"></i> Export
+      </button>
+      <button class="btn-secondary" id="importDataBtn" title="นำเข้าไฟล์คดี JSON">
+        <i class="fa-solid fa-upload"></i> Import
+      </button>
+      <input type="file" id="importFileInput" accept=".json" style="display: none;">
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="app-container">
+
+    <!-- Left Panel: Fine & Case List Search -->
+    <section class="nui-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fa-solid fa-file-invoice-dollar"></i>
+          <div>
+            <h2>Fine & Case Search</h2>
+            <span class="panel-subtitle">ค้นหาข้อหา และ ค้นหาจากรายการของกลาง</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search Controls -->
+      <div class="search-controls">
+        <div class="search-box-row">
+          <div class="search-input-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="กรอกชื่อบิลเพื่อค้นหา...">
+          </div>
+          <button class="count-btn"
+            style="width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: var(--radius-md);"
+            onclick="location.reload()" title="รีเฟรช">
+            <i class="fa-solid fa-rotate"></i>
+          </button>
+        </div>
+
+        <!-- Category Filter Tabs -->
+        <div class="category-tabs" id="categoryTabs">
+          <!-- Dynamic Category Tabs -->
+        </div>
+      </div>
+
+      <!-- Case Cards List -->
+      <div class="case-list-container" id="caseList">
+        <!-- Dynamic Case Cards -->
+      </div>
+    </section>
+
+    <!-- Right Panel: Jail Summary -->
+    <section class="nui-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <i class="fa-solid fa-gavel"></i>
+          <div>
+            <h2>Jail Menu</h2>
+            <span class="panel-subtitle">Welcome, Police Officer</span>
+          </div>
+        </div>
+        <button class="btn-secondary btn-danger" style="padding: 4px 10px; font-size: 0.75rem;" id="clearFineBtn">
+          <i class="fa-solid fa-rotate-left"></i> ล้างรายการ
+        </button>
+      </div>
+
+      <!-- Bill Information Section -->
+      <div style="padding: 16px; border-bottom: 1px solid var(--border-color);">
+        <h3 style="font-size: 0.95rem; color: #fff; text-align: center; margin-bottom: 4px;">Bill Information</h3>
+      </div>
+
+      <!-- Selected Cases Grid -->
+      <div class="selected-cases-box">
+        <div id="emptySelectedMsg" class="empty-selected">
+          <i class="fa-solid fa-basket-shopping" style="font-size: 2rem; margin-bottom: 8px;"></i><br>
+          ยังไม่ได้เลือกข้อหาคดี กดเครื่องหมาย <strong>+</strong> ในรายการด้านซ้ายเพื่อเพิ่ม
+        </div>
+        <div class="selected-tags-grid" id="selectedCasesGrid">
+          <!-- Dynamic Selected Tags -->
+        </div>
+      </div>
+
+      <!-- Calculation Summary -->
+      <div class="calc-summary-section">
+        <div class="summary-cards-row">
+          <div class="summary-card fine">
+            <label>Fine</label>
+            <div class="val" id="totalFineVal">0</div>
+          </div>
+          <div class="summary-card jail">
+            <label>Jail Time (ตั้งต้น)</label>
+            <div class="val" id="totalJailVal">0</div>
+          </div>
+        </div>
+
+        <!-- Remaining Jail Time after UnJail cards deduction -->
+        <div class="summary-card remaining-jail" id="remainingJailBox" style="margin-top: 4px; display: none;">
+          <label><i class="fa-solid fa-hourglass-half" style="color: #38bdf8;"></i> เวลาจำคุกคงเหลือ (หลังตัดบัตร
+            UnJail)</label>
+          <div class="val" id="remainingJailVal" style="color: #38bdf8;">0</div>
+        </div>
+
+        <!-- Black Money Auto Calculator Quick Button -->
+        <button class="btn-secondary" id="blackMoneyCalcBtn"
+          onclick="document.getElementById('blackMoneyModal').classList.add('active'); if(document.getElementById('blackMoneyAmountInput')) document.getElementById('blackMoneyAmountInput').value='';"
+          style="border-color: #eab308; color: #facc15;">
+          <i class="fa-solid fa-calculator"></i> คำนวณจำคุกจากยอด "เงินดำ"
+        </button>
+
+        <!-- Multipliers x1 x2 x3 -->
+        <div class="multipliers-row">
+          <div class="multi-group">
+            <button class="nui-multi-btn active" data-type="fine" data-val="1">x1</button>
+            <button class="nui-multi-btn" data-type="fine" data-val="2">x2</button>
+            <button class="nui-multi-btn" data-type="fine" data-val="3">x3</button>
+          </div>
+          <div class="multi-group">
+            <button class="nui-multi-btn active" data-type="jail" data-val="1">x1</button>
+            <button class="nui-multi-btn" data-type="jail" data-val="2">x2</button>
+            <button class="nui-multi-btn" data-type="jail" data-val="3">x3</button>
+          </div>
+        </div>
+
+        <!-- UnJail Card Calculator Section -->
+        <div class="unjail-calc-box">
+          <div class="unjail-header">
+            <i class="fa-solid fa-ticket" style="color: var(--primary-gold);"></i>
+            <span>ระบุจำนวนบัตร UnJail ที่ผู้ต้องหามีอยู่:</span>
+          </div>
+
+          <!-- Selectable Card Inventory Counters -->
+          <div class="unjail-cards-grid">
+            <div class="unjail-card" id="card10mBox">
+              <span class="unjail-label">บัตร 10 นาที</span>
+              <strong class="unjail-count" id="unjail10Count">0 ใบ</strong>
+              <div class="unjail-card-control">
+                <button class="card-cnt-btn" onclick="adjustMaxCard('c10', -1)"><i
+                    class="fa-solid fa-minus"></i></button>
+                <span class="card-cnt-val" id="has10mVal">AUTO</span>
+                <button class="card-cnt-btn" onclick="adjustMaxCard('c10', 1)"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="unjail-card" id="card30mBox">
+              <span class="unjail-label">บัตร 30 นาที</span>
+              <strong class="unjail-count" id="unjail30Count">0 ใบ</strong>
+              <div class="unjail-card-control">
+                <button class="card-cnt-btn" onclick="adjustMaxCard('c30', -1)"><i
+                    class="fa-solid fa-minus"></i></button>
+                <span class="card-cnt-val" id="has30mVal">AUTO</span>
+                <button class="card-cnt-btn" onclick="adjustMaxCard('c30', 1)"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+
+            <div class="unjail-card" id="card60mBox">
+              <span class="unjail-label">บัตร 60 นาที</span>
+              <strong class="unjail-count" id="unjail60Count">0 ใบ</strong>
+              <div class="unjail-card-control">
+                <button class="card-cnt-btn" onclick="adjustMaxCard('c60', -1)"><i
+                    class="fa-solid fa-minus"></i></button>
+                <span class="card-cnt-val" id="has60mVal">AUTO</span>
+                <button class="card-cnt-btn" onclick="adjustMaxCard('c60', 1)"><i class="fa-solid fa-plus"></i></button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 4px;">
+            <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.7rem;" onclick="resetMaxCards()">
+              <i class="fa-solid fa-rotate-left"></i> รีเซ็ตจำนวนบัตร (AUTO)
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Discord Log Preview Box -->
+        <div class="log-preview-box" style="margin-top: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 10px; font-size: 0.78rem;">
+          <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-align-left" style="color: var(--primary-gold);"></i>
+            <span>ตัวอย่างรายละเอียดคดีที่จะคัดลอก:</span>
+          </div>
+          <pre id="discordLogPreviewText" style="white-space: pre-wrap; font-family: monospace; color: var(--text-main); font-size: 0.8rem; line-height: 1.5; margin: 0; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; min-height: 160px; max-height: 240px; overflow-y: auto;">- ยังไม่ได้เลือกรายการข้อหา -</pre>
+        </div>
+
+        <!-- Action Buttons (Bottom Most) -->
+        <div class="summary-actions" style="margin-top: 8px;">
+          <button class="btn-primary" id="copySummaryBtn">
+            <i class="fa-solid fa-copy"></i> คัดลอกรายละเอียดคดี
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Manage & View All Cases -->
+  <div class="modal-overlay" id="manageModal">
+    <div class="modal-box" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-list-check" style="color: var(--primary-gold);"></i> รายการคดีทั้งหมดในระบบ</h3>
+        <button class="modal-close" id="closeManageModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">คุณสามารถเพิ่มคดี แก้ไขอัตราค่าปรับ เวลาจำคุก
+            หรือของกลางได้ตามต้องการ</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem; background: #38bdf8; color: #000;" id="addPresetBtn" onclick="openAddPresetModal()">
+              <i class="fa-solid fa-bolt"></i> เพิ่มพรีเซ็ตใหม่
+            </button>
+            <button class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem;" id="addCaseBtn">
+              <i class="fa-solid fa-plus"></i> เพิ่มข้อหาใหม่
+            </button>
+          </div>
+        </div>
+        <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.85rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); text-align: left; color: var(--text-muted);">
+              <th style="padding: 10px;">ชื่อข้อหา</th>
+              <th style="padding: 10px;">หมวดหมู่</th>
+              <th style="padding: 10px;">ค่าปรับ ($)</th>
+              <th style="padding: 10px;">จำคุก (นาที)</th>
+              <th style="padding: 10px;">จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="manageTableBody">
+            <!-- Dynamic Rows -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add / Edit Case -->
+  <div class="modal-overlay" id="caseModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="caseModalTitle"><i class="fa-solid fa-gavel" style="color: var(--primary-gold);"></i> เพิ่มข้อหาคดีใหม่
+        </h3>
+        <button class="modal-close" id="closeCaseModal">&times;</button>
+      </div>
+      <form id="caseForm">
+        <div class="modal-body">
+          <input type="hidden" id="caseIdInput">
+
+          <div class="form-group">
+            <label>ชื่อข้อหา / คดีความ *</label>
+            <input type="text" id="caseNameInput" class="form-control" required placeholder="เช่น ปล้นธนาคารใหญ่">
+          </div>
+
+          <div class="form-group">
+            <label>หมวดหมู่คดี *</label>
+            <select id="caseCatSelect" class="form-control">
+              <option value="general">คดีทั่วไป</option>
+              <option value="illegal">คดีผิดกฎหมาย</option>
+              <option value="weapon">คดีอาวุธ</option>
+              <option value="red">คดีแดง</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div class="form-group">
+              <label>ค่าปรับ (KKD / USD) *</label>
+              <input type="number" id="caseFineInput" class="form-control" required min="0" placeholder="10000">
+            </div>
+            <div class="form-group">
+              <label>เวลาจำคุก (นาที) *</label>
+              <input type="number" id="caseJailInput" class="form-control" required min="0" placeholder="30">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>รายการของกลางที่เกี่ยวข้อง (คั่นด้วยเครื่องหมายจุลภาค ,)</label>
+            <textarea id="caseEvidenceInput" class="form-control" rows="3"
+              placeholder="ชะแลง, ยาไอซ์, ปืนพก, การ์ดธนาคาร"></textarea>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">ตัวอย่าง: ชะแลง, ไขควง, เงินดำ
+              (ระบบจะใช้นำไปค้นหาของกลาง)</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" id="cancelCaseModal">ยกเลิก</button>
+          <button type="submit" class="btn-primary">บันทึกคดี</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add/Edit Preset -->
+  <div class="modal-overlay" id="presetModal">
+    <div class="modal-box" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 id="presetModalTitle"><i class="fa-solid fa-bolt" style="color: var(--primary-gold);"></i> เพิ่มพรีเซ็ตคดีใหม่</h3>
+        <button class="modal-close" onclick="closePresetModal()">&times;</button>
+      </div>
+      <form id="presetForm" onsubmit="handleSavePreset(event)">
+        <div class="modal-body">
+          <input type="hidden" id="presetIdInput">
+
+          <div class="form-group">
+            <label>ชื่อพรีเซ็ตคดี *</label>
+            <input type="text" id="presetNameInput" class="form-control" required placeholder="เช่น พรีเซ็ต: ปล้นธนาคาร + ยิงตำรวจ">
+          </div>
+
+          <div class="form-group">
+            <label>เลือกคดีความที่ต้องการรวมในพรีเซ็ตนี้ (ติ๊กเลือกหลายคดีได้):</label>
+            <div style="position: relative; margin-bottom: 8px;">
+              <input type="text" id="presetSearchInput" class="form-control" oninput="filterPresetChecklist(this.value)" placeholder="🔍 พิมพ์เพื่อค้นหาข้อหา..." style="font-size: 0.82rem; padding: 6px 10px 6px 30px;">
+              <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--text-muted);"></i>
+            </div>
+            <div id="presetCasesChecklist" style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+              <!-- Dynamic Cases Checkboxes -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closePresetModal()">ยกเลิก</button>
+          <button type="submit" class="btn-primary">บันทึกพรีเซ็ต</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="modal-overlay" id="blackMoneyModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-money-bill-wave" style="color: #facc15;"></i> คำนวณเวลาจำคุกจากยอดเงินดำ</h3>
+        <button class="modal-close"
+          onclick="document.getElementById('blackMoneyModal').classList.remove('active')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>กรอกจำนวน "เงินดำ" ทั้งหมด (KKD):</label>
+          <input type="number" id="blackMoneyAmountInput" class="form-control"
+            oninput="onBlackMoneyInputChange(this.value)" placeholder="เช่น 25000"
+            style="font-size: 1.2rem; font-weight: bold; color: #facc15;">
+        </div>
+
+        <div
+          style="background: rgba(255,255,255,0.04); border-radius: var(--radius-md); padding: 14px; margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 0.9rem;">
+            <span>ค่าปรับเงินดำ:</span>
+            <strong id="bmCalcFineText" style="color: var(--primary-gold);">$0 KKD</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; font-size: 1rem;">
+            <span>เวลาจำคุกที่คำนวณได้:</span>
+            <strong id="bmCalcJailText" style="color: #38bdf8; font-size: 1.2rem;">0 นาที</strong>
+          </div>
+        </div>
+
+        <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.4;">
+          📌 <strong>ตารางเรทจำคุกเงินดำ:</strong><br>
+          - 1 - 1,999 ➔ 5 นาที<br>
+          - 2,000 - 9,999 ➔ 30 นาที<br>
+          - 10,000 ➔ 40 นาที (เพิ่ม 10 นาทีทุกๆ 10,000 เงินดำ)
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary"
+          onclick="document.getElementById('blackMoneyModal').classList.remove('active')">ยกเลิก</button>
+        <button type="button" class="btn-primary" onclick="applyBlackMoneyCalculations()">นำไปคำนวณในคดีความ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- JS Files -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
