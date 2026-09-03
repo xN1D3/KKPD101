@@ -39,10 +39,13 @@ function loadData() {
   if (savedPresets) {
     try {
       presetsData = JSON.parse(savedPresets);
-      // Auto merge missing default presets
+      // Auto update/sync default presets if ids match or names match
       if (window.DEFAULT_PRESETS) {
         window.DEFAULT_PRESETS.forEach(defP => {
-          if (!presetsData.some(p => p.name === defP.name)) {
+          const index = presetsData.findIndex(p => p.id === defP.id || p.name === defP.name);
+          if (index !== -1) {
+            presetsData[index] = { ...defP, ...presetsData[index], caseIds: defP.caseIds };
+          } else {
             presetsData.push(defP);
           }
         });
