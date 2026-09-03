@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Load Cases & Presets from LocalStorage or Defaults
 function loadData() {
-  const savedCases = localStorage.getItem('fivem_pd_cases_v4');
+  const savedCases = localStorage.getItem('fivem_pd_cases_v5');
   if (savedCases) {
     try {
       casesData = JSON.parse(savedCases);
@@ -35,37 +35,35 @@ function loadData() {
     casesData = window.DEFAULT_CASES.map(c => ({ ...c, starred: false }));
   }
 
-  // Always force sync DEFAULT_PRESETS to ensure preset IDs and case targets are updated
-  const savedPresets = localStorage.getItem('fivem_pd_presets_v1');
+  // Presets load with forced sync from DEFAULT_PRESETS
+  const savedPresets = localStorage.getItem('fivem_pd_presets_v2');
   if (savedPresets) {
     try {
-      let loaded = JSON.parse(savedPresets);
+      presetsData = JSON.parse(savedPresets);
       if (window.DEFAULT_PRESETS) {
         window.DEFAULT_PRESETS.forEach(defP => {
-          const idx = loaded.findIndex(p => p.id === defP.id || p.name === defP.name);
+          const idx = presetsData.findIndex(p => p.id === defP.id || p.name === defP.name);
           if (idx !== -1) {
-            loaded[idx].caseIds = defP.caseIds;
-            loaded[idx].id = defP.id;
-            loaded[idx].name = defP.name;
+            presetsData[idx].caseIds = defP.caseIds;
+            presetsData[idx].id = defP.id;
           } else {
-            loaded.push(defP);
+            presetsData.push(defP);
           }
         });
       }
-      presetsData = loaded;
     } catch (e) {
-      presetsData = window.DEFAULT_PRESETS ? [...window.DEFAULT_PRESETS] : [];
+      presetsData = window.DEFAULT_PRESETS ? JSON.parse(JSON.stringify(window.DEFAULT_PRESETS)) : [];
     }
   } else {
-    presetsData = window.DEFAULT_PRESETS ? [...window.DEFAULT_PRESETS] : [];
+    presetsData = window.DEFAULT_PRESETS ? JSON.parse(JSON.stringify(window.DEFAULT_PRESETS)) : [];
   }
 
   saveData();
 }
 
 function saveData() {
-  localStorage.setItem('fivem_pd_cases_v4', JSON.stringify(casesData));
-  localStorage.setItem('fivem_pd_presets_v1', JSON.stringify(presetsData));
+  localStorage.setItem('fivem_pd_cases_v5', JSON.stringify(casesData));
+  localStorage.setItem('fivem_pd_presets_v2', JSON.stringify(presetsData));
 }
 
 function toggleStar(id, e) {
