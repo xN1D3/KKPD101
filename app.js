@@ -444,18 +444,37 @@ function clearFineBasket() {
 
 // Apply Quick Case Presets
 function applyPreset(presetId) {
-  if (presetId === 'preset-1') {
-    // Preset 1: อุ้มห่อ (คดีแดง) + อาวุธมีปืน (คดีอาวุธ)
-    const oumHor = casesData.find(c => c.name === 'อุ้มห่อ' || c.id === 'case-red-9');
-    const gunCase = casesData.find(c => c.name === 'อาวุธมีปืน' || c.id === 'case-weap-1');
-
-    if (oumHor) fineBasket.set(oumHor.id, 1);
-    if (gunCase) fineBasket.set(gunCase.id, 1);
-
-    renderCases();
-    updateSummary();
-    showToast('เลือกพรีเซ็ต 1 (อุ้มห่อ + อาวุธมีปืน) เรียบร้อย');
+  let p = presetsData.find(item => item.id === presetId);
+  if (!p && window.DEFAULT_PRESETS) {
+    p = window.DEFAULT_PRESETS.find(item => item.id === presetId);
   }
+  if (!p) {
+    console.error('Preset not found:', presetId);
+    return;
+  }
+
+  let addedCount = 0;
+  (p.caseIds || []).forEach(target => {
+    let caseObj = casesData.find(c => c.id === target || c.name === target);
+    if (!caseObj) {
+      if (target === 'case-weap-1') caseObj = casesData.find(c => c.name.includes('อาวุธมีปืน'));
+      else if (target === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
+      else if (target === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
+      else if (target === 'case-gen-1') caseObj = casesData.find(c => c.name.includes('ขัดขวางเจ้าหน้าที่'));
+      else if (target === 'case-red-2') caseObj = casesData.find(c => c.name.includes('ต่อสู้เจ้าหน้าที่'));
+      else if (target === 'case-gen-11') caseObj = casesData.find(c => c.name.includes('ทะเลาะวิวาท'));
+    }
+
+    if (caseObj) {
+      const cur = fineBasket.get(caseObj.id) || 0;
+      fineBasket.set(caseObj.id, cur + 1);
+      addedCount++;
+    }
+  });
+
+  renderCases();
+  updateSummary();
+  showToast(`เลือก ${p.name} เรียบร้อย`);
 }
 
 let maxCards = {
