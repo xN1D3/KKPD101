@@ -264,29 +264,35 @@ function renderCategories() {
 // Apply Quick Case Presets
 function applyPreset(presetId) {
   let p = presetsData.find(item => item.id === presetId);
-  if (!p) {
-    p = window.DEFAULT_PRESETS?.find(item => item.id === presetId);
+  if (!p && window.DEFAULT_PRESETS) {
+    p = window.DEFAULT_PRESETS.find(item => item.id === presetId);
   }
   if (!p) return;
 
-  // Clear current basket before applying preset or accumulate
-  // p.caseIds can contain IDs or Names
-  (p.caseIds || []).forEach(idOrName => {
-    let caseObj = casesData.find(c => c.id === idOrName || c.name === idOrName);
+  let addedCount = 0;
+  (p.caseIds || []).forEach(target => {
+    // 1. Match by exact ID
+    let caseObj = casesData.find(c => c.id === target);
 
-    // Dynamic fuzzy/fallback matching by name
+    // 2. Match by exact Name
     if (!caseObj) {
-      if (idOrName.includes('weap-1') || idOrName.includes('มีปืน')) caseObj = casesData.find(c => c.name.includes('อาวุธมีปืน'));
-      else if (idOrName.includes('red-9') || idOrName === 'อุ้มห่อ') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
-      else if (idOrName.includes('red-7') || idOrName === 'สมรู้อุ้มห่อ') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
-      else if (idOrName.includes('gen-1') || idOrName.includes('สตอรี่')) caseObj = casesData.find(c => c.name.includes('ขัดขวางเจ้าหน้าที่'));
-      else if (idOrName.includes('red-2') || idOrName.includes('ต่อสู้')) caseObj = casesData.find(c => c.name.includes('ต่อสู้เจ้าหน้าที่'));
-      else if (idOrName.includes('gen-11') || idOrName.includes('แก๊ง')) caseObj = casesData.find(c => c.name.includes('ทะเลาะวิวาท'));
+      caseObj = casesData.find(c => c.name === target);
+    }
+
+    // 3. Fallback name mappings
+    if (!caseObj) {
+      if (target === 'case-weap-1') caseObj = casesData.find(c => c.name.includes('อาวุธมีปืน'));
+      else if (target === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
+      else if (target === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
+      else if (target === 'case-gen-1') caseObj = casesData.find(c => c.name.includes('ขัดขวางเจ้าหน้าที่'));
+      else if (target === 'case-red-2') caseObj = casesData.find(c => c.name.includes('ต่อสู้เจ้าหน้าที่'));
+      else if (target === 'case-gen-11') caseObj = casesData.find(c => c.name.includes('ทะเลาะวิวาท'));
     }
 
     if (caseObj) {
-      const current = fineBasket.get(caseObj.id) || 0;
-      fineBasket.set(caseObj.id, current + 1);
+      const cur = fineBasket.get(caseObj.id) || 0;
+      fineBasket.set(caseObj.id, cur + 1);
+      addedCount++;
     }
   });
 
@@ -311,13 +317,17 @@ function renderCases() {
 
     presetsData.forEach(p => {
       const caseNames = (p.caseIds || []).map(id => {
-        const found = casesData.find(c => c.id === id);
-        return found ? found.name : null;
+        const found = casesData.find(c => c.id === id || c.name === id);
+        return found ? found.name : id;
       }).filter(Boolean).join(' + ');
 
       const card = document.createElement('div');
       card.className = 'case-card';
       card.style.borderLeft = '4px solid var(--primary-gold)';
+      card.style.cursor = 'pointer';
+      card.onclick = (e) => {
+        applyPreset(p.id);
+      };
 
       card.innerHTML = `
         <div class="case-info">
@@ -330,7 +340,7 @@ function renderCases() {
           </div>
         </div>
         <div class="case-action">
-          <button class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="applyPreset('${p.id}')">
+          <button class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem;" onclick="event.stopPropagation(); applyPreset('${p.id}')">
             <i class="fa-solid fa-check"></i> เลือกพรีเซ็ตนี้
           </button>
         </div>
