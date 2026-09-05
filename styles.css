@@ -474,14 +474,36 @@ body {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border-color);
   color: #fff;
-  width: 44px;
+  width: 52px;
   height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  text-align: center;
   border-radius: var(--radius-sm);
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 0 4px;
+  box-sizing: border-box;
+  transition: all var(--transition-fast);
+  -moz-appearance: textfield;
+}
+
+.count-num-box::-webkit-outer-spin-button,
+.count-num-box::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.count-num-box:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.count-num-box:focus {
+  outline: none;
+  border-color: var(--primary-gold);
+  background: rgba(229, 193, 88, 0.12);
+  color: var(--primary-gold);
+  box-shadow: 0 0 10px rgba(229, 193, 88, 0.3);
 }
 
 .add-btn-small {

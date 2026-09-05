@@ -398,8 +398,14 @@ function renderCases() {
       </div>
       <div class="case-action">
         <div class="count-control">
-          ${currentCount > 0 ? `<button class="add-btn-small" onclick="decreaseCase('${c.id}')"><i class="fa-solid fa-minus"></i></button>` : ''}
-          <span class="count-num-box">${currentCount}</span>
+          ${currentCount > 0 ? `<button class="add-btn-small minus-btn" onclick="decreaseCase('${c.id}')"><i class="fa-solid fa-minus"></i></button>` : ''}
+          <input type="number" min="0" class="count-num-box" value="${currentCount}"
+            data-id="${c.id}"
+            onfocus="this.select()"
+            oninput="handleCaseCountInput(this, '${c.id}')"
+            onblur="handleCaseCountBlur(this, '${c.id}')"
+            onkeydown="if(event.key === 'Enter') this.blur();"
+          >
           <button class="add-btn-small" onclick="increaseCase('${c.id}')"><i class="fa-solid fa-plus"></i></button>
         </div>
       </div>
@@ -418,6 +424,51 @@ function renderCases() {
 }
 
 // Basket Management
+function handleCaseCountInput(input, caseId) {
+  const rawVal = input.value.trim();
+  const control = input.parentElement;
+  let minusBtn = control.querySelector('.minus-btn');
+
+  if (rawVal === '') {
+    fineBasket.delete(caseId);
+    if (minusBtn) minusBtn.style.display = 'none';
+    updateSummary();
+    return;
+  }
+
+  const count = parseInt(rawVal, 10);
+  if (!isNaN(count) && count > 0) {
+    fineBasket.set(caseId, count);
+    if (!minusBtn) {
+      minusBtn = document.createElement('button');
+      minusBtn.className = 'add-btn-small minus-btn';
+      minusBtn.innerHTML = '<i class="fa-solid fa-minus"></i>';
+      minusBtn.onclick = () => decreaseCase(caseId);
+      control.insertBefore(minusBtn, input);
+    } else {
+      minusBtn.style.display = 'flex';
+    }
+  } else {
+    fineBasket.delete(caseId);
+    if (minusBtn) minusBtn.style.display = 'none';
+  }
+
+  updateSummary();
+}
+
+function handleCaseCountBlur(input, caseId) {
+  const count = parseInt(input.value.trim(), 10);
+  if (isNaN(count) || count <= 0) {
+    input.value = '0';
+    fineBasket.delete(caseId);
+  } else {
+    input.value = count;
+    fineBasket.set(caseId, count);
+  }
+  renderCases();
+  updateSummary();
+}
+
 function increaseCase(id) {
   const current = fineBasket.get(id) || 0;
   fineBasket.set(id, current + 1);
