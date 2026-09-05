@@ -120,17 +120,16 @@ let customJailOverride = null;
 function calculateBlackMoneyRates(amount) {
   if (!amount || amount <= 0) return { fine: 0, jail: 0 };
 
-  const fine = amount; // Fine equal to black money amount
+  // ค่าปรับ: ขั้นต่ำ 500 KKD (พก 1 - 500 ปรับ 500 KKD, เกิน 500 ปรับตามยอด 1:1)
+  const fine = Math.max(500, amount);
   let jail = 0;
 
-  if (amount < 501) {
-    jail = 0; // ต่ำกว่า 501 ไม่ติดคุก (ปรับตามยอดเงินดำอย่างเดียว)
-  } else if (amount >= 501 && amount <= 1999) {
+  if (amount >= 1 && amount <= 1999) {
     jail = 5;
   } else if (amount >= 2000 && amount <= 9999) {
     jail = 30;
   } else if (amount >= 10000) {
-    // 10,000 -> 40 นาที, เพิ่ม 10 นาทีทุกๆ 10,000
+    // 10,000 -> 40 นาที, เพิ่ม 10 นาทีทุกๆ 10,000 ไปเรื่อยๆ
     const tensOfThousands = Math.floor(amount / 10000);
     jail = 40 + (tensOfThousands - 1) * 10;
   }
