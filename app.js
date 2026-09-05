@@ -123,12 +123,14 @@ function calculateBlackMoneyRates(amount) {
   const fine = amount; // Fine equal to black money amount
   let jail = 0;
 
-  if (amount >= 1 && amount <= 1999) {
+  if (amount < 501) {
+    jail = 0; // ต่ำกว่า 501 ไม่ติดคุก (ปรับตามยอดเงินดำอย่างเดียว)
+  } else if (amount >= 501 && amount <= 1999) {
     jail = 5;
   } else if (amount >= 2000 && amount <= 9999) {
     jail = 30;
   } else if (amount >= 10000) {
-    // 10,000 -> 40 minutes, +10 minutes for every additional 10,000
+    // 10,000 -> 40 นาที, เพิ่ม 10 นาทีทุกๆ 10,000
     const tensOfThousands = Math.floor(amount / 10000);
     jail = 40 + (tensOfThousands - 1) * 10;
   }
@@ -442,40 +444,7 @@ function clearFineBasket() {
   showToast('ล้างรายการข้อหาทั้งหมดเรียบร้อย');
 }
 
-// Apply Quick Case Presets
-function applyPreset(presetId) {
-  let p = presetsData.find(item => item.id === presetId);
-  if (!p && window.DEFAULT_PRESETS) {
-    p = window.DEFAULT_PRESETS.find(item => item.id === presetId);
-  }
-  if (!p) {
-    console.error('Preset not found:', presetId);
-    return;
-  }
 
-  let addedCount = 0;
-  (p.caseIds || []).forEach(target => {
-    let caseObj = casesData.find(c => c.id === target || c.name === target);
-    if (!caseObj) {
-      if (target === 'case-weap-1') caseObj = casesData.find(c => c.name.includes('อาวุธมีปืน'));
-      else if (target === 'case-red-9') caseObj = casesData.find(c => c.name === 'อุ้มห่อ');
-      else if (target === 'case-red-7') caseObj = casesData.find(c => c.name === 'สมรู้อุ้มห่อ');
-      else if (target === 'case-gen-1') caseObj = casesData.find(c => c.name.includes('ขัดขวางเจ้าหน้าที่'));
-      else if (target === 'case-red-2') caseObj = casesData.find(c => c.name.includes('ต่อสู้เจ้าหน้าที่'));
-      else if (target === 'case-gen-11') caseObj = casesData.find(c => c.name.includes('ทะเลาะวิวาท'));
-    }
-
-    if (caseObj) {
-      const cur = fineBasket.get(caseObj.id) || 0;
-      fineBasket.set(caseObj.id, cur + 1);
-      addedCount++;
-    }
-  });
-
-  renderCases();
-  updateSummary();
-  showToast(`เลือก ${p.name} เรียบร้อย`);
-}
 
 let maxCards = {
   c60: null, // null means AUTO / unlimited
