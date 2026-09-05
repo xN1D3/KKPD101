@@ -223,6 +223,7 @@ function setupEventListeners() {
   document.getElementById('clearFineBtn')?.addEventListener('click', clearFineBasket);
   document.getElementById('copySummaryBtn')?.addEventListener('click', copySummaryToClipboard);
   document.getElementById('manageCasesBtn')?.addEventListener('click', openManageModal);
+  document.getElementById('settingsBtn')?.addEventListener('click', openSettingsModal);
   document.getElementById('addCaseBtn')?.addEventListener('click', openAddCaseModal);
 
   // Modals
@@ -230,6 +231,11 @@ function setupEventListeners() {
   document.getElementById('closeCaseModal')?.addEventListener('click', closeCaseModal);
   document.getElementById('cancelCaseModal')?.addEventListener('click', closeCaseModal);
   document.getElementById('caseForm')?.addEventListener('submit', handleSaveCase);
+
+  // Settings Modal Listeners
+  document.getElementById('closeSettingsModal')?.addEventListener('click', closeSettingsModal);
+  document.getElementById('doneSettingsBtn')?.addEventListener('click', closeSettingsModal);
+  document.getElementById('resetSystemBtn')?.addEventListener('click', resetToDefaultData);
 
   // Export / Import
   document.getElementById('exportDataBtn')?.addEventListener('click', exportData);
@@ -523,47 +529,6 @@ function calculateUnJailCards(totalMinutes) {
   return { c60, c30, c10 };
 }
 
-// Event Listeners Setup
-function setupEventListeners() {
-  // Search input
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    searchInput.addEventListener('input', (e) => {
-      searchQuery = e.target.value.trim().toLowerCase();
-      renderCases();
-    });
-  }
-
-  // UnJail card checkboxes listeners
-  const has10mCard = document.getElementById('has10mCard');
-  const has30mCard = document.getElementById('has30mCard');
-  const has60mCard = document.getElementById('has60mCard');
-
-  [has10mCard, has30mCard, has60mCard].forEach(cb => {
-    cb?.addEventListener('change', () => {
-      updateSummary();
-    });
-  });
-
-  // Action Buttons
-  document.getElementById('clearFineBtn')?.addEventListener('click', clearFineBasket);
-  document.getElementById('copySummaryBtn')?.addEventListener('click', copySummaryToClipboard);
-  document.getElementById('manageCasesBtn')?.addEventListener('click', openManageModal);
-  document.getElementById('addCaseBtn')?.addEventListener('click', openAddCaseModal);
-
-  // Modals
-  document.getElementById('closeManageModal')?.addEventListener('click', closeManageModal);
-  document.getElementById('closeCaseModal')?.addEventListener('click', closeCaseModal);
-  document.getElementById('cancelCaseModal')?.addEventListener('click', closeCaseModal);
-  document.getElementById('caseForm')?.addEventListener('submit', handleSaveCase);
-
-  // Export / Import
-  document.getElementById('exportDataBtn')?.addEventListener('click', exportData);
-  document.getElementById('importDataBtn')?.addEventListener('click', () => {
-    document.getElementById('importFileInput')?.click();
-  });
-  document.getElementById('importFileInput')?.addEventListener('change', importData);
-}
 
 // Update Summary Right Panel
 function updateSummary() {
@@ -734,6 +699,30 @@ function closeManageModal() {
   document.getElementById('manageModal').classList.remove('active');
 }
 
+// Settings Modal Logic
+function openSettingsModal() {
+  document.getElementById('settingsModal')?.classList.add('active');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal')?.classList.remove('active');
+}
+
+function resetToDefaultData() {
+  if (confirm('คุณต้องการรีเซ็ตรายการข้อหาและพรีเซ็ตทั้งหมดกลับเป็นค่ามาตรฐานเริ่มต้นใช่หรือไม่? (ข้อมูลที่เคยแก้ไขจะถูกแทนที่)')) {
+    localStorage.removeItem('fivem_pd_cases_v6');
+    localStorage.removeItem('fivem_pd_presets_v6');
+    casesData = window.DEFAULT_CASES ? window.DEFAULT_CASES.map(c => ({ ...c, starred: false })) : [];
+    presetsData = window.DEFAULT_PRESETS ? JSON.parse(JSON.stringify(window.DEFAULT_PRESETS)) : [];
+    saveData();
+    renderCases();
+    renderManageTable();
+    updateSummary();
+    closeSettingsModal();
+    showToast('รีเซ็ตข้อมูลระบบกลับเป็นค่าเริ่มต้นเรียบร้อยแล้ว');
+  }
+}
+
 function renderManageTable() {
   const container = document.getElementById('manageTableBody');
   container.innerHTML = '';
@@ -755,9 +744,11 @@ function renderManageTable() {
       row.innerHTML = `
         <td style="padding: 10px; font-weight: bold; color: var(--primary-gold);">${escapeHtml(p.name)}</td>
         <td style="padding: 10px; color: var(--text-muted); font-size: 0.8rem;" colspan="3">รวม: ${escapeHtml(caseNames || '-')}</td>
-        <td style="padding: 10px;">
-          <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editPreset('${p.id}')"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
-          <button class="btn-secondary btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deletePreset('${p.id}')"><i class="fa-solid fa-trash"></i> ลบ</button>
+        <td style="padding: 10px 12px; white-space: nowrap; text-align: right;">
+          <div style="display: inline-flex; gap: 6px; align-items: center;">
+            <button class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="editPreset('${p.id}')"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
+            <button class="btn-secondary btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="deletePreset('${p.id}')"><i class="fa-solid fa-trash"></i> ลบ</button>
+          </div>
         </td>
       `;
       container.appendChild(row);
@@ -777,9 +768,11 @@ function renderManageTable() {
       <td style="padding: 10px; color: var(--text-muted); font-size: 0.8rem;">${c.category}</td>
       <td style="padding: 10px; color: var(--primary-gold);">$${c.fine.toLocaleString()}</td>
       <td style="padding: 10px; color: #38bdf8;">${c.jail} นาที</td>
-      <td style="padding: 10px;">
-        <button class="btn-secondary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="editCase('${c.id}')"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
-        <button class="btn-secondary btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="deleteCase('${c.id}')"><i class="fa-solid fa-trash"></i> ลบ</button>
+      <td style="padding: 10px 12px; white-space: nowrap; text-align: right;">
+        <div style="display: inline-flex; gap: 6px; align-items: center;">
+          <button class="btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;" onclick="editCase('${c.id}')"><i class="fa-solid fa-pen-to-square"></i> แก้ไข</button>
+          <button class="btn-secondary btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="deleteCase('${c.id}')"><i class="fa-solid fa-trash"></i> ลบ</button>
+        </div>
       </td>
     `;
     container.appendChild(row);
@@ -979,14 +972,20 @@ function deleteCase(id) {
 
 // Export/Import JSON Data
 function exportData() {
-  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(casesData, null, 2));
+  const payload = {
+    version: 6,
+    exportedAt: new Date().toISOString(),
+    cases: casesData,
+    presets: presetsData
+  };
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
   const downloadAnchor = document.createElement('a');
   downloadAnchor.setAttribute("href", dataStr);
-  downloadAnchor.setAttribute("download", `fivem_pd_cases_${new Date().toISOString().slice(0, 10)}.json`);
+  downloadAnchor.setAttribute("download", `kkpd101_backup_${new Date().toISOString().slice(0, 10)}.json`);
   document.body.appendChild(downloadAnchor);
   downloadAnchor.click();
   downloadAnchor.remove();
-  showToast('ส่งออกไฟล์ข้อมูลคดีเรียบร้อยแล้ว');
+  showToast('ส่งออกไฟล์ข้อมูลคดีและพรีเซ็ตเรียบร้อยแล้ว');
 }
 
 function importData(e) {
@@ -996,22 +995,36 @@ function importData(e) {
   const reader = new FileReader();
   reader.onload = function (event) {
     try {
-      const importedCases = JSON.parse(event.target.result);
-      if (Array.isArray(importedCases)) {
-        casesData = importedCases;
+      const data = JSON.parse(event.target.result);
+      if (data && data.cases && Array.isArray(data.cases)) {
+        casesData = data.cases;
+        if (Array.isArray(data.presets)) {
+          presetsData = data.presets;
+        }
         saveData();
         renderCases();
         renderManageTable();
         updateSummary();
+        closeSettingsModal();
+        showToast('นำเข้าข้อมูลคดีและพรีเซ็ตสำเร็จแล้ว!');
+      } else if (Array.isArray(data)) {
+        // Old format backward compatibility (array of cases)
+        casesData = data;
+        saveData();
+        renderCases();
+        renderManageTable();
+        updateSummary();
+        closeSettingsModal();
         showToast('นำเข้าข้อมูลคดีสำเร็จแล้ว!');
       } else {
         alert('รูปแบบไฟล์ JSON ไม่ถูกต้อง');
       }
     } catch (err) {
-      alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
+      alert('เกิดข้อผิดพลาดในการอ่านไฟล์ JSON');
     }
   };
   reader.readAsText(file);
+  e.target.value = '';
 }
 
 // Toast System

@@ -32,14 +32,11 @@
       </div>
     </div>
     <div class="header-actions">
-      <button class="btn-secondary" id="manageCasesBtn">
-        <i class="fa-solid fa-gear"></i> จัดการคดี / เพิ่มข้อหา
+      <button class="btn-secondary" id="manageCasesBtn" title="จัดการรายการคดีและพรีเซ็ต">
+        <i class="fa-solid fa-list-check"></i> จัดการคดี / เพิ่มข้อหา
       </button>
-      <button class="btn-secondary" id="exportDataBtn" title="ส่งออกไฟล์คดี JSON">
-        <i class="fa-solid fa-download"></i> Export
-      </button>
-      <button class="btn-secondary" id="importDataBtn" title="นำเข้าไฟล์คดี JSON">
-        <i class="fa-solid fa-upload"></i> Import
+      <button class="btn-secondary" id="settingsBtn" title="การตั้งค่าระบบ">
+        <i class="fa-solid fa-gear"></i> ตั้งค่า
       </button>
       <input type="file" id="importFileInput" accept=".json" style="display: none;">
     </div>
@@ -254,13 +251,60 @@
               <th style="padding: 10px;">หมวดหมู่</th>
               <th style="padding: 10px;">ค่าปรับ ($)</th>
               <th style="padding: 10px;">จำคุก (นาที)</th>
-              <th style="padding: 10px;">จัดการ</th>
+              <th style="padding: 10px 12px; text-align: right; min-width: 140px;">จัดการ</th>
             </tr>
           </thead>
           <tbody id="manageTableBody">
             <!-- Dynamic Rows -->
           </tbody>
         </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings (การตั้งค่าระบบ) -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-gear" style="color: var(--primary-gold);"></i> ตั้งค่าระบบ</h3>
+        <button class="modal-close" id="closeSettingsModal">&times;</button>
+      </div>
+      <div class="modal-body" style="gap: 16px;">
+        <!-- Backup & Restore Section -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-database" style="color: var(--primary-gold);"></i> สำรองและกู้คืนข้อมูลคดี
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+            ส่งออกไฟล์ข้อมูลคดีความและพรีเซ็ต (JSON) เพื่อสำรองไว้ หรือนำเข้าไฟล์ข้อมูลเพื่ออัปเดตลงเครื่อง
+          </p>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <button class="btn-secondary" id="exportDataBtn" style="justify-content: center; padding: 10px 14px; font-weight: 600;">
+              <i class="fa-solid fa-download" style="color: var(--primary-gold);"></i> Export ข้อมูล
+            </button>
+            <button class="btn-secondary" id="importDataBtn" style="justify-content: center; padding: 10px 14px; font-weight: 600;">
+              <i class="fa-solid fa-upload" style="color: #38bdf8;"></i> Import ข้อมูล
+            </button>
+          </div>
+        </div>
+
+        <!-- Reset Default Section -->
+        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-rotate-left" style="color: #f87171;"></i> คืนค่าข้อมูลเริ่มต้น
+          </h4>
+          <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
+            รีเซ็ตรายการข้อหาและพรีเซ็ตทั้งหมดกลับไปเป็นค่ามาตรฐานตั้งต้นของระบบ
+          </p>
+          
+          <button class="btn-secondary btn-danger" id="resetSystemBtn" style="width: 100%; justify-content: center; padding: 10px 14px; font-weight: 600;">
+            <i class="fa-solid fa-triangle-exclamation"></i> รีเซ็ตกลับเป็นค่าเริ่มต้น
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" id="doneSettingsBtn">ปิดหน้าต่าง</button>
       </div>
     </div>
   </div>
