@@ -27,10 +27,21 @@
         <i class="fa-solid fa-shield-halved"></i>
       </div>
       <div class="brand-text">
-        <h1>KKPD Fine & Case</h1>
+        <h1>KKPD Police KKTOWN</h1>
         <span>วิชาคำนวณคดี 101</span>
       </div>
     </div>
+
+    <!-- View Switcher (Jail Menu vs GuideBook) -->
+    <nav class="nav-views">
+      <button class="nav-tab active" id="navTabCalculator" onclick="switchView('calculator')">
+        <i class="fa-solid fa-calculator"></i> คำนวณคดี (Jail Menu)
+      </button>
+      <button class="nav-tab" id="navTabGuidebook" onclick="switchView('guidebook')">
+        <i class="fa-solid fa-book-open"></i> คู่มือไกด์บุ๊ค (KKPD 101)
+      </button>
+    </nav>
+
     <div class="header-actions">
       <button class="btn-secondary" id="manageCasesBtn" title="จัดการรายการคดีและพรีเซ็ต">
         <i class="fa-solid fa-list-check"></i> จัดการคดี / เพิ่มข้อหา
@@ -42,8 +53,8 @@
     </div>
   </header>
 
-  <!-- Main Content Layout -->
-  <main class="app-container">
+  <!-- Main Content Layout (Calculator / Jail Menu) -->
+  <main class="app-container" id="viewCalculator">
 
     <!-- Left Panel: Fine & Case List Search -->
     <section class="nui-panel">
@@ -157,12 +168,14 @@
 
         <!-- UnJail Card Calculator Section -->
         <div class="unjail-calc-box">
-          <div class="unjail-header" style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div class="unjail-header"
+            style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
             <div style="display: flex; align-items: center; gap: 6px; flex: 1;">
               <i class="fa-solid fa-ticket" style="color: var(--primary-gold);"></i>
               <span>ระบุจำนวนบัตร UnJail ที่ผู้ต้องหามีอยู่:</span>
             </div>
-            <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.7rem; white-space: nowrap;" onclick="resetMaxCards()">
+            <button class="btn-secondary" style="padding: 2px 8px; font-size: 0.7rem; white-space: nowrap;"
+              onclick="resetMaxCards()">
               <i class="fa-solid fa-rotate-left"></i> รีเซ็ตจำนวนบัตร (AUTO)
             </button>
           </div>
@@ -205,12 +218,15 @@
         </div>
 
         <!-- Live Discord Log Preview Box -->
-        <div class="log-preview-box" style="margin-top: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 10px; font-size: 0.78rem;">
-          <div style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+        <div class="log-preview-box"
+          style="margin-top: 6px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 8px 10px; font-size: 0.78rem;">
+          <div
+            style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
             <i class="fa-solid fa-align-left" style="color: var(--primary-gold);"></i>
             <span>ตัวอย่างรายละเอียดคดีที่จะคัดลอก:</span>
           </div>
-          <pre id="discordLogPreviewText" style="white-space: pre-wrap; font-family: monospace; color: var(--text-main); font-size: 0.78rem; line-height: 1.4; margin: 0; background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; min-height: 80px; max-height: 140px; overflow-y: auto;">- ยังไม่ได้เลือกรายการข้อหา -</pre>
+          <pre id="discordLogPreviewText"
+            style="white-space: pre-wrap; font-family: monospace; color: var(--text-main); font-size: 0.78rem; line-height: 1.4; margin: 0; background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; min-height: 80px; max-height: 140px; overflow-y: auto;">- ยังไม่ได้เลือกรายการข้อหา -</pre>
         </div>
 
         <!-- Action Buttons (Bottom Most) -->
@@ -224,6 +240,56 @@
 
   </main>
 
+  <!-- GuideBook Layout View (KKPD 101 GuideBook) -->
+  <section class="guidebook-container" id="viewGuidebook" style="display: none;">
+    <!-- Left Sidebar Navigation -->
+    <aside class="guide-sidebar">
+      <div class="guide-sidebar-header">
+        <div class="guide-brand" onclick="loadGuidebookArticle('basic-knowledge')">
+          <i class="fa-solid fa-house"></i>
+          <span>KKPD 101 GuideBook</span>
+        </div>
+      </div>
+
+      <div class="guide-search-wrapper">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="guidebookSearchInput" class="guide-search-input" placeholder="ค้นหากฎหรือหัวข้อคู่มือ..."
+          oninput="onGuidebookSearchInput(this.value)">
+      </div>
+
+      <nav class="guide-nav-list" id="guidebookNavList">
+        <!-- Dynamic Category and Article Links -->
+      </nav>
+    </aside>
+
+    <!-- Main Content Reader Panel -->
+    <section class="guide-reader-panel">
+      <div class="guide-reader-topbar">
+        <div class="guide-breadcrumb" id="guidebookBreadcrumb">
+          <i class="fa-solid fa-house"></i>
+          <span class="crumb-sep">/</span>
+          <span id="crumbCategory">กฎการเล่นทั่วไป</span>
+          <span class="crumb-sep">/</span>
+          <span id="crumbArticle" class="crumb-current">ความรู้พื้นฐาน</span>
+        </div>
+        <button class="btn-secondary" id="copyArticleBtn" onclick="copyCurrentArticleContent()" title="คัดลอกข้อความกฎ">
+          <i class="fa-solid fa-copy"></i> คัดลอกเนื้อหา
+        </button>
+      </div>
+
+      <div class="guide-content-scroll">
+        <div class="guide-article-header">
+          <h1 id="guideArticleTitle">ความรู้พื้นฐาน</h1>
+          <p id="guideArticleSubtitle" class="guide-article-subtitle">คำแนะนำในการเล่น</p>
+        </div>
+
+        <div class="guide-article-body" id="guideArticleBody">
+          <!-- Rendered Article HTML -->
+        </div>
+      </div>
+    </section>
+  </section>
+
   <!-- Modal: Manage & View All Cases -->
   <div class="modal-overlay" id="manageModal">
     <div class="modal-box" style="max-width: 800px;">
@@ -236,7 +302,8 @@
           <span style="font-size: 0.85rem; color: var(--text-muted);">คุณสามารถเพิ่มคดี แก้ไขอัตราค่าปรับ เวลาจำคุก
             หรือของกลางได้ตามต้องการ</span>
           <div style="display: flex; gap: 8px;">
-            <button class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem; background: #38bdf8; color: #000;" id="addPresetBtn" onclick="openAddPresetModal()">
+            <button class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem; background: #38bdf8; color: #000;"
+              id="addPresetBtn" onclick="openAddPresetModal()">
               <i class="fa-solid fa-bolt"></i> เพิ่มพรีเซ็ตใหม่
             </button>
             <button class="btn-primary" style="padding: 6px 14px; font-size: 0.85rem;" id="addCaseBtn">
@@ -271,34 +338,41 @@
       </div>
       <div class="modal-body" style="gap: 16px;">
         <!-- Backup & Restore Section -->
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
-          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+        <div
+          style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+          <h4
+            style="font-size: 0.95rem; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
             <i class="fa-solid fa-database" style="color: var(--primary-gold);"></i> สำรองและกู้คืนข้อมูลคดี
           </h4>
           <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
             ส่งออกไฟล์ข้อมูลคดีความและพรีเซ็ต (JSON) เพื่อสำรองไว้ หรือนำเข้าไฟล์ข้อมูลเพื่ออัปเดตลงเครื่อง
           </p>
-          
+
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-            <button class="btn-secondary" id="exportDataBtn" style="justify-content: center; padding: 10px 14px; font-weight: 600;">
+            <button class="btn-secondary" id="exportDataBtn"
+              style="justify-content: center; padding: 10px 14px; font-weight: 600;">
               <i class="fa-solid fa-download" style="color: var(--primary-gold);"></i> Export ข้อมูล
             </button>
-            <button class="btn-secondary" id="importDataBtn" style="justify-content: center; padding: 10px 14px; font-weight: 600;">
+            <button class="btn-secondary" id="importDataBtn"
+              style="justify-content: center; padding: 10px 14px; font-weight: 600;">
               <i class="fa-solid fa-upload" style="color: #38bdf8;"></i> Import ข้อมูล
             </button>
           </div>
         </div>
 
         <!-- Reset Default Section -->
-        <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
-          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+        <div
+          style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px;">
+          <h4
+            style="font-size: 0.95rem; color: #fff; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
             <i class="fa-solid fa-rotate-left" style="color: #f87171;"></i> คืนค่าข้อมูลเริ่มต้น
           </h4>
           <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.4;">
             รีเซ็ตรายการข้อหาและพรีเซ็ตทั้งหมดกลับไปเป็นค่ามาตรฐานตั้งต้นของระบบ
           </p>
-          
-          <button class="btn-secondary btn-danger" id="resetSystemBtn" style="width: 100%; justify-content: center; padding: 10px 14px; font-weight: 600;">
+
+          <button class="btn-secondary btn-danger" id="resetSystemBtn"
+            style="width: 100%; justify-content: center; padding: 10px 14px; font-weight: 600;">
             <i class="fa-solid fa-triangle-exclamation"></i> รีเซ็ตกลับเป็นค่าเริ่มต้น
           </button>
         </div>
@@ -367,7 +441,8 @@
   <div class="modal-overlay" id="presetModal">
     <div class="modal-box" style="max-width: 540px;">
       <div class="modal-header">
-        <h3 id="presetModalTitle"><i class="fa-solid fa-bolt" style="color: var(--primary-gold);"></i> เพิ่มพรีเซ็ตคดีใหม่</h3>
+        <h3 id="presetModalTitle"><i class="fa-solid fa-bolt" style="color: var(--primary-gold);"></i>
+          เพิ่มพรีเซ็ตคดีใหม่</h3>
         <button class="modal-close" onclick="closePresetModal()">&times;</button>
       </div>
       <form id="presetForm" onsubmit="handleSavePreset(event)">
@@ -376,16 +451,20 @@
 
           <div class="form-group">
             <label>ชื่อพรีเซ็ตคดี *</label>
-            <input type="text" id="presetNameInput" class="form-control" required placeholder="เช่น พรีเซ็ต: ปล้นธนาคาร + ยิงตำรวจ">
+            <input type="text" id="presetNameInput" class="form-control" required
+              placeholder="เช่น พรีเซ็ต: ปล้นธนาคาร + ยิงตำรวจ">
           </div>
 
           <div class="form-group">
             <label>เลือกคดีความที่ต้องการรวมในพรีเซ็ตนี้ (ติ๊กเลือกหลายคดีได้):</label>
             <div style="position: relative; margin-bottom: 8px;">
-              <input type="text" id="presetSearchInput" class="form-control" oninput="filterPresetChecklist(this.value)" placeholder="🔍 พิมพ์เพื่อค้นหาข้อหา..." style="font-size: 0.82rem; padding: 6px 10px 6px 30px;">
-              <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--text-muted);"></i>
+              <input type="text" id="presetSearchInput" class="form-control" oninput="filterPresetChecklist(this.value)"
+                placeholder="🔍 พิมพ์เพื่อค้นหาข้อหา..." style="font-size: 0.82rem; padding: 6px 10px 6px 30px;">
+              <i class="fa-solid fa-magnifying-glass"
+                style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: var(--text-muted);"></i>
             </div>
-            <div id="presetCasesChecklist" style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+            <div id="presetCasesChecklist"
+              style="max-height: 220px; overflow-y: auto; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; display: flex; flex-direction: column; gap: 8px;">
               <!-- Dynamic Cases Checkboxes -->
             </div>
           </div>

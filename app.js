@@ -4,6 +4,11 @@ let presetsData = [];
 let selectedCategory = 'preset';
 let searchQuery = '';
 
+// GuideBook State
+let currentView = 'calculator';
+let currentGuideArticleId = 'basic-knowledge';
+let guideSearchQuery = '';
+
 // Selected Cases in Fine Basket
 let fineBasket = new Map();
 
@@ -20,6 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
   renderCategories();
   renderCases();
   updateSummary();
+
+  // Route & Guidebook setup
+  handleRouteFromHash();
+  window.addEventListener('hashchange', handleRouteFromHash);
 });
 
 // Load Cases & Presets from LocalStorage or Defaults
@@ -1106,3 +1115,171 @@ function escapeHtml(str) {
     }[m];
   });
 }
+
+// ==========================================
+// View Switcher (Calculator vs GuideBook)
+// ==========================================
+function switchView(viewName, updateHash = true) {
+  currentView = viewName;
+
+  const viewCalc = document.getElementById('viewCalculator');
+  const viewGuide = document.getElementById('viewGuidebook');
+  const tabCalc = document.getElementById('navTabCalculator');
+  const tabGuide = document.getElementById('navTabGuidebook');
+
+  if (viewName === 'guidebook') {
+    if (viewCalc) viewCalc.style.display = 'none';
+    if (viewGuide) viewGuide.style.display = 'grid';
+    if (tabCalc) tabCalc.classList.remove('active');
+    if (tabGuide) tabGuide.classList.add('active');
+
+    renderGuidebookSidebar();
+    renderGuidebookArticle(currentGuideArticleId);
+
+    if (updateHash) {
+      window.location.hash = `guidebook/${currentGuideArticleId}`;
+    }
+  } else {
+    if (viewGuide) viewGuide.style.display = 'none';
+    if (viewCalc) viewCalc.style.display = 'grid';
+    if (tabGuide) tabGuide.classList.remove('active');
+    if (tabCalc) tabCalc.classList.add('active');
+
+    if (updateHash) {
+      window.location.hash = 'calculator';
+    }
+  }
+}
+
+function handleRouteFromHash() {
+  const hash = window.location.hash || '';
+  if (hash.startsWith('#guidebook')) {
+    const parts = hash.split('/');
+    if (parts[1]) {
+      currentGuideArticleId = parts[1];
+    }
+    switchView('guidebook', false);
+  } else {
+    switchView('calculator', false);
+  }
+}
+
+// ==========================================
+// GuideBook Functions
+// ==========================================
+function renderGuidebookSidebar() {
+  const container = document.getElementById('guidebookNavList');
+  if (!container || !window.DEFAULT_GUIDEBOOK) return;
+
+  container.innerHTML = '';
+  const q = (guideSearchQuery || '').trim().toLowerCase();
+
+  window.DEFAULT_GUIDEBOOK.forEach(section => {
+    // Filter items in section
+    const matchingItems = section.items.filter(item => {
+      if (!q) return true;
+      return item.title.toLowerCase().includes(q) ||
+             (item.subtitle && item.subtitle.toLowerCase().includes(q)) ||
+             (item.content && item.content.toLowerCase().includes(q));
+    });
+
+    if (matchingItems.length === 0) return;
+
+    const groupEl = document.createElement('div');
+    groupEl.className = 'guide-nav-group';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'guide-nav-title';
+    titleEl.textContent = section.category;
+    groupEl.appendChild(titleEl);
+
+    matchingItems.forEach(item => {
+      const itemEl = document.createElement('div');
+      itemEl.className = `guide-nav-item ${item.id === currentGuideArticleId ? 'active' : ''}`;
+      itemEl.dataset.id = item.id;
+      itemEl.innerHTML = `<i class="fa-solid fa-circle nav-dot"></i> <span>${escapeHtml(item.title)}</span>`;
+      itemEl.onclick = () => {
+        loadGuidebookArticle(item.id);
+      };
+      groupEl.appendChild(itemEl);
+    });
+
+    container.appendChild(groupEl);
+  });
+}
+
+function loadGuidebookArticle(articleId) {
+  currentGuideArticleId = articleId;
+  window.location.hash = `guidebook/${articleId}`;
+  renderGuidebookSidebar();
+  renderGuidebookArticle(articleId);
+}
+
+function renderGuidebookArticle(articleId) {
+  if (!window.DEFAULT_GUIDEBOOK) return;
+
+  let foundItem = null;
+  let foundCategory = '';
+
+  for (const sec of window.DEFAULT_GUIDEBOOK) {
+    const item = sec.items.find(i => i.id === articleId);
+    if (item) {
+      foundItem = item;
+      foundCategory = sec.category;
+      break;
+    }
+  }
+
+  // Fallback to first article if not found
+  if (!foundItem && window.DEFAULT_GUIDEBOOK.length > 0 && window.DEFAULT_GUIDEBOOK[0].items.length > 0) {
+    foundItem = window.DEFAULT_GUIDEBOOK[0].items[0];
+    foundCategory = window.DEFAULT_GUIDEBOOK[0].category;
+    currentGuideArticleId = foundItem.id;
+  }
+
+  if (!foundItem) return;
+
+  // Update Breadcrumb
+  const crumbCat = document.getElementById('crumbCategory');
+  const crumbArt = document.getElementById('crumbArticle');
+  if (crumbCat) crumbCat.textContent = foundCategory;
+  if (crumbArt) crumbArt.textContent = foundItem.title;
+
+  // Update Article Header
+  const titleEl = document.getElementById('guideArticleTitle');
+  const subEl = document.getElementById('guideArticleSubtitle');
+  if (titleEl) titleEl.textContent = foundItem.title;
+  if (subEl) {
+    subEl.textContent = foundItem.subtitle || '';
+    subEl.style.display = foundItem.subtitle ? 'block' : 'none';
+  }
+
+  // Update Article Body
+  const bodyEl = document.getElementById('guideArticleBody');
+  if (bodyEl) {
+    bodyEl.innerHTML = foundItem.content;
+  }
+
+  // Scroll to top of article
+  const scrollContainer = document.querySelector('.guide-content-scroll');
+  if (scrollContainer) scrollContainer.scrollTop = 0;
+}
+
+function onGuidebookSearchInput(val) {
+  guideSearchQuery = val;
+  renderGuidebookSidebar();
+}
+
+function copyCurrentArticleContent() {
+  const bodyEl = document.getElementById('guideArticleBody');
+  const titleEl = document.getElementById('guideArticleTitle');
+  if (!bodyEl) return;
+
+  const plainText = `${titleEl ? titleEl.textContent + '\n\n' : ''}${bodyEl.innerText}`;
+  navigator.clipboard.writeText(plainText).then(() => {
+    showToast(`คัดลอกเนื้อหา "${titleEl?.textContent || 'คู่มือ'}" เรียบร้อยแล้ว`);
+  }).catch(() => {
+    showToast('เกิดข้อผิดพลาดในการคัดลอก');
+  });
+}
+
