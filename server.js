@@ -2,12 +2,12 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = process.env.PORT || 3000;
+const PORT = 3000;
 const MIME_TYPES = {
-  '.html': 'text/html; charset=UTF-8',
-  '.js': 'application/javascript; charset=UTF-8',
-  '.css': 'text/css; charset=UTF-8',
-  '.json': 'application/json; charset=UTF-8',
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -18,13 +18,16 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let cleanUrl = req.url.split('?')[0];
-  let safePath = path.normalize(cleanUrl).replace(/^(\.\.[\/\\])+/, '');
-  let filePath = path.join(__dirname, safePath === '/' ? 'index.html' : safePath);
+  let reqPath = req.url.split('?')[0];
+  if (reqPath === '/' || reqPath === '') {
+    reqPath = '/index.html';
+  }
 
-  fs.stat(filePath, (err, stats) => {
-    if (err || !stats.isFile()) {
-      res.writeHead(404, { 'Content-Type': 'text/plain; charset=UTF-8' });
+  const filePath = path.join(__dirname, reqPath);
+
+  fs.readFile(filePath, (err, content) => {
+    if (err) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
       res.end('404 Not Found');
       return;
     }
@@ -36,10 +39,10 @@ const server = http.createServer((req, res) => {
       'Content-Type': contentType,
       'Cache-Control': 'no-cache'
     });
-    fs.createReadStream(filePath).pipe(res);
+    res.end(content);
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running at http://127.0.0.1:${PORT} and http://localhost:${PORT}`);
 });
