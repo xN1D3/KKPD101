@@ -128,11 +128,11 @@ window.DEFAULT_GUIDEBOOK = [
   },
   {
     id: "section-general",
-    category: "กฎการเล่นทั่วไป",
+    category: "Gameplay",
     items: [
       {
         id: "basic-knowledge",
-        title: "ความรู้พื้นฐาน",
+        title: "การทำคดีเบื้องต้น",
         subtitle: "คำแนะนำในการเล่น",
         content: `
           <h3>คำแนะนำในการเล่น</h3>
