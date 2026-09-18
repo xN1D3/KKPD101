@@ -29,7 +29,7 @@ window.DEFAULT_CASES = [
   { id: "case-ill-1", name: "Body Bag", category: "illegal", fine: 5000, jail: 0, evidence: [] },
   { id: "case-ill-2", name: "Lockpick", category: "illegal", fine: 5000, jail: 0, evidence: [] },
   { id: "case-ill-3", name: "กัญชงอัดแท่ง", category: "illegal", fine: 700, jail: 30, evidence: [] },
-  { id: "case-ill-4", name: "เงินดำ", category: "illegal", fine: 2000, jail: 30, evidence: [] },
+  { id: "case-ill-4", name: "เงินดำ", category: "illegal", fine: 0, jail: 0, evidence: [] },
   { id: "case-ill-5", name: "ปูน", category: "illegal", fine: 1000, jail: 5, evidence: [] },
   { id: "case-ill-6", name: "ยา 4x100", category: "illegal", fine: 1000, jail: 30, evidence: [] },
   { id: "case-ill-7", name: "ยา Nae Nae/Good Good", category: "illegal", fine: 7500, jail: 30, evidence: [] },
