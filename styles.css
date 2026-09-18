@@ -1,19 +1,21 @@
 :root {
-  /* Bento Dark Luxe Theme Colors */
+  /* Bento Dark Luxe Theme Colors - Updated to target accent color #ddb86b */
   --bg-main: #0F0F12;
   --bg-card: #18191C;
   --bg-card-hover: #202125;
   --bg-input: #202125;
   --border-color: #2B2C31;
-  --border-gold: #E5C158;
+  --border-highlight: rgba(221, 184, 107, 0.25);
+  --border-gold: #ddb86b;
 
   --text-main: #FFFFFF;
   --text-muted: #9CA3AF;
-  --text-gold: #E5C158;
+  --text-gold: #ddb86b;
 
-  --primary-gold: #E5C158;
-  --primary-gold-hover: #F0D375;
-  --gold-shadow: rgba(229, 193, 88, 0.15);
+  --primary-gold: #ddb86b;
+  --primary-gold-hover: #e8ca82;
+  --gold-shadow: rgba(221, 184, 107, 0.2);
+  --gold-glow: rgba(221, 184, 107, 0.35);
 
   --font-family: 'Prompt', sans-serif;
 
@@ -53,7 +55,7 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(212, 160, 23, 0.3);
+  background: rgba(221, 184, 107, 0.3);
   border-radius: 4px;
 }
 
@@ -93,7 +95,7 @@ body {
 .brand-icon {
   width: 38px;
   height: 38px;
-  background: linear-gradient(135deg, rgba(229, 193, 88, 0.2) 0%, rgba(229, 193, 88, 0.05) 100%);
+  background: linear-gradient(135deg, rgba(221, 184, 107, 0.2) 0%, rgba(221, 184, 107, 0.05) 100%);
   border: 1px solid var(--border-gold);
   border-radius: var(--radius-md);
   display: flex;
@@ -138,7 +140,7 @@ body {
 .btn-primary:hover {
   background: var(--primary-gold-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(229, 193, 88, 0.3);
+  box-shadow: 0 6px 18px rgba(221, 184, 107, 0.3);
 }
 
 .btn-secondary {
@@ -193,7 +195,7 @@ body {
 }
 
 .panel-header {
-  background: linear-gradient(90deg, rgba(212, 160, 23, 0.25) 0%, rgba(212, 160, 23, 0.05) 100%);
+  background: linear-gradient(90deg, rgba(221, 184, 107, 0.2) 0%, rgba(221, 184, 107, 0.04) 100%);
   border-bottom: 1px solid var(--border-highlight);
   padding: 14px 20px;
   display: flex;
@@ -299,9 +301,9 @@ body {
 
 /* Preset Quick Button */
 .preset-btn {
-  background: rgba(229, 193, 88, 0.1);
+  background: rgba(221, 184, 107, 0.12);
   color: var(--primary-gold);
-  border: 1px solid rgba(229, 193, 88, 0.3);
+  border: 1px solid rgba(221, 184, 107, 0.3);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
   font-size: 0.78rem;
@@ -348,7 +350,7 @@ body {
 }
 
 .cat-tab.active {
-  background: rgba(212, 160, 23, 0.15);
+  background: rgba(221, 184, 107, 0.18);
   border-color: var(--primary-gold);
   color: var(--primary-gold);
   font-weight: 600;
@@ -427,9 +429,9 @@ body {
 }
 
 .evidence-tag {
-  background: rgba(212, 160, 23, 0.12);
-  border: 1px solid rgba(212, 160, 23, 0.3);
-  color: #f1c40f;
+  background: rgba(221, 184, 107, 0.12);
+  border: 1px solid rgba(221, 184, 107, 0.3);
+  color: var(--primary-gold);
   font-size: 0.85rem;
   padding: 3px 10px;
   border-radius: 12px;
@@ -501,9 +503,9 @@ body {
 .count-num-box:focus {
   outline: none;
   border-color: var(--primary-gold);
-  background: rgba(229, 193, 88, 0.12);
+  background: rgba(221, 184, 107, 0.12);
   color: var(--primary-gold);
-  box-shadow: 0 0 10px rgba(229, 193, 88, 0.3);
+  box-shadow: 0 0 10px rgba(221, 184, 107, 0.3);
 }
 
 .add-btn-small {
@@ -555,10 +557,10 @@ body {
 }
 
 .nui-multi-btn.active {
-  border-color: #d4a017;
+  border-color: var(--primary-gold);
   color: #fff;
-  background: rgba(212, 160, 23, 0.1);
-  box-shadow: 0 0 8px rgba(212, 160, 23, 0.3);
+  background: rgba(221, 184, 107, 0.15);
+  box-shadow: 0 0 8px rgba(221, 184, 107, 0.3);
 }
 
 /* Right Panel: Jail Summary */
@@ -691,7 +693,7 @@ body {
 
 .unjail-card {
   background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(212, 160, 23, 0.2);
+  border: 1px solid rgba(221, 184, 107, 0.25);
   border-radius: var(--radius-sm);
   padding: 8px 6px;
   text-align: center;
@@ -739,7 +741,7 @@ body {
 .card-cnt-val {
   font-size: 0.75rem;
   font-weight: 700;
-  color: #facc15;
+  color: var(--primary-gold);
 }
 
 /* Multiplier Quick Buttons */
@@ -774,7 +776,7 @@ body {
 .multi-btn.active, .multi-btn:hover {
   border-color: var(--primary-gold);
   color: var(--primary-gold);
-  background: rgba(212, 160, 23, 0.1);
+  background: rgba(221, 184, 107, 0.15);
 }
 
 /* Action Buttons */
@@ -786,8 +788,8 @@ body {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary-gold) 0%, #b8860b 100%);
-  color: #000;
+  background: linear-gradient(135deg, var(--primary-gold) 0%, #b89243 100%);
+  color: #0F0F12;
   border: none;
   padding: 12px;
   border-radius: var(--radius-md);
@@ -800,11 +802,11 @@ body {
   justify-content: center;
   gap: 8px;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(212, 160, 23, 0.2);
+  box-shadow: 0 4px 14px var(--gold-shadow);
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, #f1b71e 0%, var(--primary-gold) 100%);
+  background: linear-gradient(135deg, #e8ca82 0%, var(--primary-gold) 100%);
   box-shadow: 0 4px 18px var(--gold-glow);
   transform: translateY(-1px);
 }
@@ -1108,7 +1110,7 @@ body {
 .guide-search-input:focus {
   outline: none;
   border-color: var(--primary-gold);
-  background: rgba(229, 193, 88, 0.05);
+  background: rgba(221, 184, 107, 0.08);
 }
 
 .guide-nav-list {
@@ -1160,7 +1162,7 @@ body {
 }
 
 .guide-nav-item.active {
-  background: rgba(229, 193, 88, 0.12);
+  background: rgba(221, 184, 107, 0.15);
   color: var(--primary-gold);
   font-weight: 700;
   border-left: 3px solid var(--primary-gold);
@@ -1185,7 +1187,7 @@ body {
 
 .guide-reader-topbar {
   height: 52px;
-  background: linear-gradient(90deg, rgba(229, 193, 88, 0.12) 0%, rgba(229, 193, 88, 0.02) 100%);
+  background: linear-gradient(90deg, rgba(221, 184, 107, 0.12) 0%, rgba(221, 184, 107, 0.02) 100%);
   border-bottom: 1px solid var(--border-color);
   padding: 0 24px;
   display: flex;
@@ -1294,9 +1296,9 @@ body {
 }
 
 .guide-callout.alert-warning {
-  background: rgba(229, 193, 88, 0.08);
-  border: 1px solid rgba(229, 193, 88, 0.3);
-  color: #FEF3C7;
+  background: rgba(221, 184, 107, 0.1);
+  border: 1px solid rgba(221, 184, 107, 0.3);
+  color: #FEF7E6;
 }
 
 .guide-callout.alert-warning i {

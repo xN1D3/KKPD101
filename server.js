@@ -2,7 +2,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
@@ -44,5 +44,6 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running at http://127.0.0.1:${PORT} and http://localhost:${PORT}`);
+  const appUrl = process.env.PORTLESS_URL || `http://localhost:${PORT}`;
+  console.log(`Server is running at ${appUrl}`);
 });

@@ -27,8 +27,8 @@
         <i class="fa-solid fa-shield-halved"></i>
       </div>
       <div class="brand-text">
-        <h1>KKPD Police KKTOWN</h1>
-        <span>วิชาคำนวณคดี 101</span>
+        <h1>Police KKTOWN 101</h1>
+        <span>วิชาคำนวณคดี</span>
       </div>
     </div>
 
@@ -148,7 +148,7 @@
         <!-- Black Money Auto Calculator Quick Button -->
         <button class="btn-secondary" id="blackMoneyCalcBtn"
           onclick="document.getElementById('blackMoneyModal').classList.add('active'); if(document.getElementById('blackMoneyAmountInput')) document.getElementById('blackMoneyAmountInput').value='';"
-          style="border-color: #eab308; color: #facc15;">
+          style="border-color: var(--primary-gold); color: var(--primary-gold);">
           <i class="fa-solid fa-calculator"></i> คำนวณจำคุกจากยอด "เงินดำ"
         </button>
 
@@ -268,7 +268,7 @@
         <div class="guide-breadcrumb" id="guidebookBreadcrumb">
           <i class="fa-solid fa-house"></i>
           <span class="crumb-sep">/</span>
-          <span id="crumbCategory">Gameplay</span>
+          <span id="crumbCategory">กฎการเล่นทั่วไป</span>
           <span class="crumb-sep">/</span>
           <span id="crumbArticle" class="crumb-current">ความรู้พื้นฐาน</span>
         </div>
@@ -279,7 +279,7 @@
 
       <div class="guide-content-scroll">
         <div class="guide-article-header">
-          <h1 id="guideArticleTitle">การทำคดีเบื้องต้น</h1>
+          <h1 id="guideArticleTitle">ความรู้พื้นฐาน</h1>
           <p id="guideArticleSubtitle" class="guide-article-subtitle">คำแนะนำในการเล่น</p>
         </div>
 
@@ -479,7 +479,7 @@
   <div class="modal-overlay" id="blackMoneyModal">
     <div class="modal-box" style="max-width: 480px;">
       <div class="modal-header">
-        <h3><i class="fa-solid fa-money-bill-wave" style="color: #facc15;"></i> คำนวณเวลาจำคุกจากยอดเงินดำ</h3>
+        <h3><i class="fa-solid fa-money-bill-wave" style="color: var(--primary-gold);"></i> คำนวณเวลาจำคุกจากยอดเงินดำ</h3>
         <button class="modal-close"
           onclick="document.getElementById('blackMoneyModal').classList.remove('active')">&times;</button>
       </div>
@@ -488,7 +488,7 @@
           <label>กรอกจำนวน "เงินดำ" ทั้งหมด (KKD):</label>
           <input type="number" id="blackMoneyAmountInput" class="form-control"
             oninput="onBlackMoneyInputChange(this.value)" placeholder="เช่น 25000"
-            style="font-size: 1.2rem; font-weight: bold; color: #facc15;">
+            style="font-size: 1.2rem; font-weight: bold; color: var(--primary-gold);">
         </div>
 
         <div

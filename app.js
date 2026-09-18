@@ -790,7 +790,7 @@ function renderManageTable() {
   // 1. Render Presets section first
   if (presetsData.length > 0) {
     const presetHeaderRow = document.createElement('tr');
-    presetHeaderRow.innerHTML = `<td colspan="5" style="padding: 10px; background: rgba(229, 193, 88, 0.1); color: var(--primary-gold); font-weight: bold;"><i class="fa-solid fa-bolt"></i> รายการพรีเซ็ตคดีความ</td>`;
+    presetHeaderRow.innerHTML = `<td colspan="5" style="padding: 10px; background: rgba(221, 184, 107, 0.12); color: var(--primary-gold); font-weight: bold;"><i class="fa-solid fa-bolt"></i> รายการพรีเซ็ตคดีความ</td>`;
     container.appendChild(presetHeaderRow);
 
     presetsData.forEach(p => {
